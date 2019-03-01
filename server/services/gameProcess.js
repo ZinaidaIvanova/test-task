@@ -1,4 +1,3 @@
-const crypto = require('../services/cryptography');
 const  gameResult = require('../config/gameResult');
 const  gameState = require('../config/gameState');
 
@@ -31,21 +30,12 @@ const getName = (value, name) => {
 
 const isStepPossible = (step, gameInfo, idPlayer) => {
     colName = getTableColName(step.row, step.col);
-    console.log("currPlayer " + gameInfo.currPlayer);
-    console.log("idPlayer " + idPlayer);
-    console.log("char " + gameInfo[colName]);
     if (gameInfo.currPlayer != idPlayer) {
-        console.log("false id");
         return false;
     }
     if ((gameInfo[colName] !== '?') && (gameInfo[colName] != null)) {
-        console.log((gameInfo[colName] !== '?'));
-        console.log((gameInfo[colName] != null));
-        console.log((gameInfo[colName] !== '?') || (gameInfo[colName] != null));
-        console.log("false char");
         return false;
     }
-    console.log("true");
     return true;
 }
 
@@ -58,7 +48,6 @@ const getGameMatrix = (gameInfo) => {
         }
         matrix.push(row);
     }
-    console.log(matrix);
     return matrix;
 }
 
@@ -269,9 +258,6 @@ const getIdWinner = (gameInfo) => {
 module.exports = {
     getTableColName,
     isStepPossible,
-    checkWinner,
-    getNextPlayer,
-    getPlayerChar,
     getNewStepResult,
     getGameStateInfo,
     getIdWinner

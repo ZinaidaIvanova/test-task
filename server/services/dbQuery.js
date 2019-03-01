@@ -1,13 +1,12 @@
 const dbConfig = require('../config/dbConfig');
 const jwt = require('jsonwebtoken');
-const projectConst = require('../config/projectConst');
 const gameState = require('../config/gameState');
 const gameResult = require('../config/gameResult');
 const crypto = require('./cryptography');
 const gameProcess = require('./gameProcess');
 
 
-const isPlayerExist = (name, callback) => {
+const getPlayerbyName = (name, callback) => {
     const sqlQuery = "SELECT * FROM player WHERE name = ?";
     dbConfig.connection.query(sqlQuery, name, function(err, result){
         callback(err, result);
@@ -42,7 +41,9 @@ const addPlayer = (name, callback) => {
                     "VALUES (?, ?)";
     const values = [accessToken, name];
     dbConfig.connection.query(sqlQuery, values, function (err, result) {
-        callback(err, result.insertId);
+        if (err) throw err;
+        console.log(result);
+        callback(result.insertId);
     });
 
 }
@@ -62,8 +63,6 @@ const getGameList = (callback) => {
         "LEFT JOIN state ON game.id_state=state.id_state " +
         "ORDER BY state.name DESC";
         dbConfig.connection.query(sqlQuery, [], function (err, result) {
-            console.log(err);
-            console.log(result);
             callback(err, JSON.parse(JSON.stringify(result)));
     });
 }
@@ -77,12 +76,12 @@ const joinGame = (idOpponent, gameToken, name, callback) => {
                     "WHERE game_token = ?";
     values = [idOpponent, Date.now(), Date.now(), gameState.playing, gameToken];
     dbConfig.connection.query(sqlQuery, values, function (err) {
-        console.log(err);
-        callback(err, name);
+        if (err) throw err;
+        callback(name);
     })
 }
 
-const isGameProcessExist = (gameToken, callback) => {
+const getGameProcessInfo = (gameToken, callback) => {
     const sqlQuery = "SELECT game.id_game AS idGame, game.game_duration AS duration, " +
                     "game.last_step_time AS lastStep, game.id_owner AS idOwner, " +
                     "game.id_opponent AS idOpponent, game.curr_player AS currPlayer, " +
@@ -128,8 +127,6 @@ const doStep = (step, stepResult, gameToken, callback) => {
         stepResult.lastStepTime,
         gameToken];
     dbConfig.connection.query(sqlQuery, values, function (err, result) {
-        console.log(err);
-        console.log(result);
         if (err) throw err;
         callback();
     });
@@ -138,10 +135,10 @@ const doStep = (step, stepResult, gameToken, callback) => {
 module.exports = {
     addGame,
     addPlayer,
-    isPlayerExist,
+    getPlayerbyName,
     getGameList,
     joinGame,
-    isGameProcessExist,
+    getGameProcessInfo,
     addNewGameProcess,
     doStep,
     getPlayerById
