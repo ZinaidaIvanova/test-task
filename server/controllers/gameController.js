@@ -69,17 +69,21 @@ const gameStepHandler = (req, res) => {
             response.errorResponse(res, 500, 'This player doesn\'t exist');
         } else {
             dbQuery.getGameProcessInfo(gameToken, function (info) {
-                const gameInfo = info[0];
-                const idPlayer = result[0]["id_player"];
-                if(gameInfo.idProcess != null) {
-                    checkAndDoStep(res, step, gameInfo, gameToken, idPlayer);
+                if (info.length == 0) {
+                    response.errorResponse(res, 500, 'This game doesn\'t exist');
                 } else {
-                    dbQuery.addNewGameProcess(gameInfo.idGame, function (err) {
-                        if (err) {
-                            response.errorResponse(res, 500, err.code);
-                        }
-                    });
-                    checkAndDoStep(res, step, gameInfo, gameToken, idPlayer);
+                    const gameInfo = info[0];
+                    const idPlayer = result[0]["id_player"];
+                    if (gameInfo.idProcess != null) {
+                        checkAndDoStep(res, step, gameInfo, gameToken, idPlayer);
+                    } else {
+                        dbQuery.addNewGameProcess(gameInfo.idGame, function (err) {
+                            if (err) {
+                                response.errorResponse(res, 500, err.code);
+                            }
+                        });
+                        checkAndDoStep(res, step, gameInfo, gameToken, idPlayer);
+                    }
                 }
             });
         }
@@ -108,15 +112,22 @@ const getGameState = (req, res) => {
             response.errorResponse(res, 500, 'This player doesn\'t exist');
         } else {
             dbQuery.getGameProcessInfo(gameToken, function (info) {
-                const gameInfo = info[0];
-                const idPlayer = result[0]["id_player"];
-                if (gameInfo.idResult != gameResult.draw) {
-                    const id = gameProcess.getIdWinner(gameInfo);
-                    dbQuery.getPlayerById(id, function(nameInfo) {
-                        response.gameStateResponse(res, gameProcess.getGameStateInfo(gameInfo, idPlayer, nameInfo[0]["name"]));
-                    });
+                if (info.length == 0) {
+                    response.errorResponse(res, 500, 'This game doesn\'t exist');
                 } else {
-                    response.gameStateResponse(res, gameProcess.getGameStateInfo(gameInfo, idPlayer, null));
+                    const gameInfo = info[0];
+                    const idPlayer = result[0]["id_player"];
+                    if (gameProcess.isDurationOverstep(gameInfo)) {
+                        dbQuery.deleteGame(gameToken);
+                        response.errorResponse(res, 404, 'Game over. Duration id overstep');
+                    } else if (gameInfo.idResult != gameResult.draw) {
+                        const id = gameProcess.getIdWinner(gameInfo);
+                        dbQuery.getPlayerById(id, function (nameInfo) {
+                            response.gameStateResponse(res, gameProcess.getGameStateInfo(gameInfo, idPlayer, nameInfo[0]["name"]));
+                        });
+                    } else {
+                        response.gameStateResponse(res, gameProcess.getGameStateInfo(gameInfo, idPlayer, null));
+                    }
                 }
             });
         }

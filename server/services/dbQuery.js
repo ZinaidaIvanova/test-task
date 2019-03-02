@@ -90,7 +90,8 @@ const getGameProcessInfo = (gameToken, callback) => {
                     "game_process.s_row_f_col, game_process.s_row_t_col, " +
                     "game_process.t_row_f_col, game_process.t_row_s_col, " +
                     "game_process.t_row_t_col, game_process.id_game_process AS idProcess, " +
-                    "game.game_begin_time AS beginTime, game.id_result AS idResult " +
+                    "game.game_begin_time AS beginTime, game.id_result AS idResult, " +
+                    "game.id_state AS idState " +
                     "FROM game " +
                     "LEFT JOIN game_process ON game_process.id_game = game.id_game " +
                     "WHERE game.game_token = ?";
@@ -132,6 +133,16 @@ const doStep = (step, stepResult, gameToken, callback) => {
     });
 }
 
+const deleteGame = (gameToken) => {
+    const  sqlQuery = "DELETE game.*, game_process.* " +
+                    "FROM game " +
+                    "LEFT JOIN game_process ON game_process.id_game = game.id_game " +
+                    "WHERE game.game_token = ?";
+    dbConfig.connection.query(sqlQuery, gameToken, function (err) {
+        if (err) throw err;
+    });
+}
+
 module.exports = {
     addGame,
     addPlayer,
@@ -141,5 +152,6 @@ module.exports = {
     getGameProcessInfo,
     addNewGameProcess,
     doStep,
-    getPlayerById
+    getPlayerById,
+    deleteGame
 }

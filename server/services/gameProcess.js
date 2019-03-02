@@ -33,6 +33,11 @@ const isStepPossible = (step, gameInfo, idPlayer) => {
     if (gameInfo.currPlayer != idPlayer) {
         return false;
     }
+
+    if (gameInfo.idState != gameState.playing) {
+        return false;
+    }
+
     if ((gameInfo[colName] !== '?') && (gameInfo[colName] != null)) {
         return false;
     }
@@ -226,6 +231,12 @@ const getDuration = (gameInfo) => {
     return (Date.now() - gameInfo.beginTime);
 }
 
+const isDurationOverstep = (gameInfo) => {
+    const curDuration = Date.now() - gameInfo.lastStep;
+    const maxTime = 5 * 60 * 1000;
+    return (curDuration > maxTime);
+}
+
 const isPlayerTurn = (gameInfo, idPlayer) => {
     return (gameInfo.currPlayer == idPlayer);
 }
@@ -260,5 +271,6 @@ module.exports = {
     isStepPossible,
     getNewStepResult,
     getGameStateInfo,
-    getIdWinner
+    getIdWinner,
+    isDurationOverstep
 }
